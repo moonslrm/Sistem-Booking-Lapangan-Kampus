@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use Faker\Factory as FakerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -24,9 +25,16 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $idFaker = FakerFactory::create('id_ID');
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $idFaker->name(),
+            'email' => $idFaker->unique()->safeEmail(),
+            'phone' => $idFaker->phoneNumber(),
+            'avatar' => null,
+            'role' => $idFaker->randomElement(['waban', 'umum', 'koorlap', 'admin']),
+            'is_campus_member' => $idFaker->boolean(40),
+            'is_active' => true,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

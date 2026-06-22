@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
+    ->withProviders(require __DIR__.'/providers.php')
     ->withRouting(
         api: __DIR__.'/../routes/api.php',
         web: __DIR__.'/../routes/web.php',
@@ -15,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
         $middleware->alias([
-            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
