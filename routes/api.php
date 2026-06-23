@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BookingControllerV2 as BookingController;
 use App\Http\Controllers\Api\V1\VenueController;
+use App\Http\Controllers\Api\V1\QRCodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\PaymentController;
 
@@ -33,33 +34,25 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::get('/bookings/{booking}', [BookingController::class, 'show']);
         Route::patch('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
         Route::patch('/bookings/{booking}/check-in', [BookingController::class, 'checkIn']);
+        Route::get('/bookings/{booking}/qr', [QRCodeController::class, 'show']);
+    });
+
+    Route::middleware(['auth:sanctum', 'role:koorlap,admin'])->group(function () {
+        Route::post('/qr/validate', [QRCodeController::class, 'validateQr']);
+        Route::get('/scan-qr', function () {
+            return response()->json([
+                'success' => true,
+                'message' => 'QR scan access granted.',
+                'data' => null,
+                'meta' => [
+                    'timestamp' => now()->toIso8601String(),
+                    'version' => '1.0.0',
+                ],
+            ]);
+        });
     });
 
     Route::get('/debug/slot-lock-status/{slotId}/{date}', [BookingController::class, 'slotLockStatus']);
-
-    Route::middleware(['auth:sanctum', 'role:admin'])->get('/admin-only', function () {
-        return response()->json([
-            'success' => true,
-            'message' => 'Admin access granted.',
-            'data' => null,
-            'meta' => [
-                'timestamp' => now()->toIso8601String(),
-                'version' => '1.0.0',
-            ],
-        ]);
-    });
-
-    Route::middleware(['auth:sanctum', 'role:koorlap,admin'])->get('/scan-qr', function () {
-        return response()->json([
-            'success' => true,
-            'message' => 'QR scan access granted.',
-            'data' => null,
-            'meta' => [
-                'timestamp' => now()->toIso8601String(),
-                'version' => '1.0.0',
-            ],
-        ]);
-    });
 });
 
 // Midtrans webhook (no auth middleware)

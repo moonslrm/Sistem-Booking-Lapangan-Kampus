@@ -170,7 +170,7 @@ class MidtransService
             // Generate QR code (placeholder service)
             if (class_exists(\App\Services\QRCodeService::class)) {
                 try {
-                    app(\App\Services\QRCodeService::class)->generateForBooking($booking);
+                    app(\App\Services\QRCodeService::class)->generateQRImage($booking);
                 } catch (\Throwable $e) {
                     Log::channel('booking')->error('QR generation failed', ['error' => $e->getMessage()]);
                 }
