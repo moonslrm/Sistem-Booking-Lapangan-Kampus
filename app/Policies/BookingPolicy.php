@@ -20,4 +20,13 @@ class BookingPolicy
 
         return in_array($booking->status, ['pending_payment', 'confirmed'], true);
     }
+
+    public function checkIn(User $user, Booking $booking): bool
+    {
+        if (! $this->view($user, $booking) && ! $user->hasRole('koorlap')) {
+            return false;
+        }
+
+        return $booking->status === 'confirmed';
+    }
 }
