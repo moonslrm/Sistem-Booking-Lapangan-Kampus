@@ -13,6 +13,7 @@ use App\Models\VenueSlot;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\SlotLockService;
+use App\Services\VoucherService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -93,44 +94,15 @@ class BookingService
             $voucher = null;
 
             if (! empty($voucherCode)) {
-                $voucher = Voucher::query()->where('code', $voucherCode)->first();
+                $voucherService = app(VoucherService::class);
+                $validationResult = $voucherService->validateVoucher($voucherCode, $user, $totalPrice);
 
-                if (! $voucher || ! $voucher->isValid()) {
-                    throw new BookingException('Voucher code is invalid or expired.');
+                if (! $validationResult['valid']) {
+                    throw new BookingException($validationResult['message']);
                 }
 
-                if ($voucher->target_role !== 'all' && $voucher->target_role !== $user->role) {
-                    throw new BookingException('Voucher is not valid for your user role.');
-                }
-
-                if ($totalPrice < $voucher->min_booking_amount) {
-                    throw new BookingException('Booking minimum amount does not meet voucher requirements.');
-                }
-
-                if ($voucher->hasReachedLimit()) {
-                    throw new BookingException('Voucher usage limit has been reached.');
-                }
-
-                $userUsageCount = VoucherUsage::query()
-                    ->where('voucher_id', $voucher->id)
-                    ->where('user_id', $user->id)
-                    ->count();
-
-                if ($voucher->max_per_user > 0 && $userUsageCount >= $voucher->max_per_user) {
-                    throw new BookingException('You have already used this voucher the maximum number of times.');
-                }
-
-                if ($voucher->discount_type === 'percentage') {
-                    $discountAmount = round($totalPrice * ($voucher->discount_value / 100), 2);
-                } else {
-                    $discountAmount = (float) $voucher->discount_value;
-                }
-
-                if ($voucher->max_discount_amount > 0) {
-                    $discountAmount = min($discountAmount, (float) $voucher->max_discount_amount);
-                }
-
-                $discountAmount = min($discountAmount, $totalPrice);
+                $discountAmount = $validationResult['discount_amount'];
+                $voucher = Voucher::query()->where('code', strtoupper($voucherCode))->first();
             }
 
             $booking = Booking::query()->create([

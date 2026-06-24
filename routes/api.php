@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\QRCodeController;
 use App\Http\Controllers\Api\V1\VenueController;
+use App\Http\Controllers\Api\V1\VoucherController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware('throttle:api')->group(function () {
@@ -42,6 +43,9 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
         Route::post('/profile/fcm-token', [ProfileController::class, 'registerFcmToken']);
+
+        Route::post('/vouchers/validate', [VoucherController::class, 'validate']);
+        Route::get('/vouchers/active', [VoucherController::class, 'activePromos']);
     });
 
     Route::middleware(['auth:sanctum', 'role:koorlap,admin'])->group(function () {

@@ -27,7 +27,8 @@ class VoucherFactory extends Factory
             'discount_value' => $discountType === 'percentage'
                 ? $idFaker->numberBetween(5, 40)
                 : $idFaker->numberBetween(5000, 50000),
-            'min_booking_amount' => $idFaker->numberBetween(0, 150000),
+            // default safe value to avoid flaky tests; individual tests can override
+            'min_booking_amount' => 0,
             'max_discount_amount' => $idFaker->optional()->numberBetween(15000, 100000),
             'max_total_usage' => $idFaker->randomElement([0, 100, 200]),
             'max_per_user' => $idFaker->numberBetween(1, 3),
