@@ -208,6 +208,10 @@ class BookingService
                 ->delete();
         });
 
+        if (class_exists(\App\Jobs\SendBookingCancellationJob::class)) {
+            dispatch(new \App\Jobs\SendBookingCancellationJob($booking->id, $reason ?? 'Tidak disebutkan'));
+        }
+
         app(SlotLockService::class)->releaseLock($booking->slot_id, $booking->booking_date->toDateString(), $booking->user_id);
 
         Log::channel('booking')->info('Booking cancelled.', [

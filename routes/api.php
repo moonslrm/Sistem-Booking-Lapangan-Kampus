@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BookingControllerV2 as BookingController;
-use App\Http\Controllers\Api\V1\VenueController;
-use App\Http\Controllers\Api\V1\QRCodeController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\QRCodeController;
+use App\Http\Controllers\Api\V1\VenueController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/health', function () {
@@ -35,6 +37,11 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::patch('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
         Route::patch('/bookings/{booking}/check-in', [BookingController::class, 'checkIn']);
         Route::get('/bookings/{booking}/qr', [QRCodeController::class, 'show']);
+
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::post('/profile/fcm-token', [ProfileController::class, 'registerFcmToken']);
     });
 
     Route::middleware(['auth:sanctum', 'role:koorlap,admin'])->group(function () {
@@ -43,6 +50,20 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
             return response()->json([
                 'success' => true,
                 'message' => 'QR scan access granted.',
+                'data' => null,
+                'meta' => [
+                    'timestamp' => now()->toIso8601String(),
+                    'version' => '1.0.0',
+                ],
+            ]);
+        });
+    });
+
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+        Route::get('/admin-only', function () {
+            return response()->json([
+                'success' => true,
+                'message' => 'Admin access granted.',
                 'data' => null,
                 'meta' => [
                     'timestamp' => now()->toIso8601String(),

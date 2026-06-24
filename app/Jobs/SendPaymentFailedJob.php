@@ -2,17 +2,15 @@
 
 namespace App\Jobs;
 
+use App\Models\Booking;
+use App\Services\NotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
-use App\Models\Booking;
-use App\Services\NotificationService;
-
-class SendBookingConfirmationJob implements ShouldQueue
+class SendPaymentFailedJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -29,13 +27,13 @@ class SendBookingConfirmationJob implements ShouldQueue
             return;
         }
 
-        $notificationService->notifyBookingConfirmed($booking);
+        $notificationService->notifyPaymentFailed($booking);
     }
 
     public function failed(\Throwable $exception): void
     {
         \Illuminate\Support\Facades\Log::channel('notification')->error(
-            'SendBookingConfirmationJob failed',
+            'SendPaymentFailedJob failed',
             ['booking_id' => $this->bookingId, 'error' => $exception->getMessage()]
         );
     }

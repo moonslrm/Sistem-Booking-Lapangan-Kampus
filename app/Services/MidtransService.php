@@ -179,15 +179,23 @@ class MidtransService
             // Release slot lock
             app(SlotLockService::class)->releaseLock($booking->slot_id, $booking->booking_date->toDateString(), $booking->user_id);
 
-            // Dispatch notification job placeholder
+            // Dispatch booking confirmation notification job
             if (class_exists(\App\Jobs\SendBookingConfirmationJob::class)) {
                 dispatch(new \App\Jobs\SendBookingConfirmationJob($booking->id));
+            }
+
+            if (class_exists(\App\Services\NotificationService::class)) {
+                app(\App\Services\NotificationService::class)->scheduleReminders($booking);
             }
 
             Log::channel('booking')->info('Payment succeeded and booking confirmed.', ['booking_id' => $booking->id, 'payment_id' => $payment->id]);
         } elseif ($newStatus === 'failed' || $newStatus === 'expired') {
             $booking->status = $newStatus;
             $booking->save();
+
+            if (class_exists(\App\Jobs\SendPaymentFailedJob::class)) {
+                dispatch(new \App\Jobs\SendPaymentFailedJob($booking->id));
+            }
 
             // Release slot lock
             app(SlotLockService::class)->releaseLock($booking->slot_id, $booking->booking_date->toDateString(), $booking->user_id);

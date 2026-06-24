@@ -130,6 +130,13 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'notification' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/notification.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
